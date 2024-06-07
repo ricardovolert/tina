@@ -25,6 +25,7 @@ import pywhatkit
 import requests
 from bs4 import BeautifulSoup
 
+
 # Função para converter número para texto
 # numero_para_texto : converte um número em seu equivalente textual em português, 
 # retornando uma string correspondente ao número fornecido.
@@ -91,6 +92,7 @@ def analisar_previsao(soup):
 # detalhada em uma string descritiva.
 def previsao_por_extenso(cidade, previsao_detalhada):
     descricao = f"Agora em {cidade} faz {previsao_detalhada['temperatura']}, {previsao_detalhada['tempo']} com umidade em {previsao_detalhada['umidade']} e ventos com velocidade de {previsao_detalhada['vento']}\n"
+    print(descricao)
     return descricao
 
 # Define uma função google_search que faz uma busca no Google por uma 
@@ -119,6 +121,12 @@ def google_search(query):
         return results
     else:
         return []
+
+# função tocar_musica: Abre aba do Browser
+def tocar_musica(musica):
+    query = musica.strip().replace(' ', '+') + " official audio"
+    # print(query)
+    pywhatkit.playonyt(query)
 
 # Inicializa o reconhecedor de áudio (audio) e o conversor de texto para fala (maquina).
 audio = sr.Recognizer()
@@ -161,7 +169,7 @@ def executa_comando():
 # - Encerrar o programa.
 def comando_voz_usuario():
     comando = executa_comando()
-    if 'horas' in comando:
+    if 'que horas são' in comando:
         hora_atual  = datetime.datetime.now().strftime('%H:%M')
         # Convertendo a hora e minuto para texto
         hora, minuto = map(int, hora_atual.split(':'))
@@ -171,21 +179,21 @@ def comando_voz_usuario():
         hora_por_extenso = f"{hora_texto} horas e {minuto_texto} minutos"
         maquina.say('Agora são ' + hora_por_extenso)
         maquina.runAndWait()
-    elif 'pesquise' in comando:
-        procurar = comando.replace('pesquise', '')
+    elif 'pesquise' in comando or 'pesquisar' in comando:
+        procurar = comando.replace('pesquise', '').replace('pesquisar', '').strip()
         wikipedia.set_lang('pt')
         resultado = wikipedia.summary(procurar, 2)
         print(resultado)
         maquina.say(resultado)
         maquina.runAndWait()
-    #elif 'roteiro' in comando:
-        query = comando.replace('pesquise', '').strip()
+        #elif 'roteiro' in comando:
+        query = comando.replace('pesquise', '').replace('pesquisar', '').strip()
         resultados = google_search(query)
         resultado_final = ' '.join(resultados)
         print(resultado_final)
         maquina.say(resultado_final)
         maquina.runAndWait()
-    elif 'temperatura' in comando:
+    elif 'qual é a temperatura' in comando:
         # Exemplo de uso
         cidade = 'Curitiba'
         soup = obter_previsao_tempo_google(cidade)
@@ -198,10 +206,10 @@ def comando_voz_usuario():
             maquina.say("Desculpe, não foi possível obter a previsão do tempo.")
             maquina.runAndWait()
     elif 'tocar' in comando:
-        musica = comando.replace('tocar','')
-        resultado = pywhatkit.playonyt(musica)
+        musica = comando.replace('tocar','').strip()
         maquina.say('Procurando música')
         maquina.runAndWait()
+        tocar_musica(musica)
     elif 'sair' in comando or 'parar' in comando:
         maquina.say('Encerrando o programa.')
         maquina.runAndWait()
@@ -209,11 +217,18 @@ def comando_voz_usuario():
 
 # Inicia o programa com uma mensagem de saudação usando conversão de texto para fala.
 maquina.say("Olá, meu nome é Tina. No que posso lhe ajudar hoje?")
+maquina.say("Entre as opções você pode perdir por:")
+maquina.say("Tina que horas são?")
+maquina.say("Tina pesquise Curitiba")
+maquina.say("Tina pesquisar sobre Festa Junina")
+maquina.say("Tina qual é a temperatura?")
+maquina.say("Tina tocar Beatles")
+maquina.say("Tina sair")
 maquina.runAndWait()
 
 # Inicia um loop infinito que imprime as instruções de uso e 
 # chama a função comando_voz_usuario para continuar ouvindo e 
 # executando comandos de voz do usuário.
 while True:
-    print("use: [horas] [pesquise ...] [temperatura] [tocar ...] [sair]")
+    print("use: [que horas são] [pesquise ...] [qual é a temperatura] [tocar ...] [sair]")
     comando_voz_usuario()
